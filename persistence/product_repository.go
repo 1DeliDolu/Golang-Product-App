@@ -35,7 +35,7 @@ func (productRepository *ProductRepository) GetAllProducts() []domain.Product {
 	productRows, err := productRepository.dbPool.Query(ctx, "Select * from products")
 
 	if err != nil {
-		log.Error("Error while getting all products %v", err)
+		log.Error(fmt.Sprintf("Error while getting all products %v", err))
 		return []domain.Product{}
 	}
 	return extractProductsFromRows(productRows)
@@ -49,7 +49,7 @@ func (productRepository *ProductRepository) GetAllProductsByStore(storeName stri
 	productRows, err := productRepository.dbPool.Query(ctx, getProductsByStoreNameSql, storeName)
 
 	if err != nil {
-		log.Error("Error while getting all products %v", err)
+		log.Error(fmt.Sprintf("Error while getting all products %v", err))
 		return []domain.Product{}
 	}
 	return extractProductsFromRows(productRows)
@@ -69,7 +69,7 @@ func (productRepository *ProductRepository) AddProduct(product domain.Product) e
 	log.Info(fmt.Printf("Product added with %v", addNewProduct))
 	return nil
 }
-
+//1 func to extract products from rows
 func extractProductsFromRows(productRows pgx.Rows) []domain.Product {
 	var products = []domain.Product{}
 	var id int64
@@ -106,10 +106,10 @@ func (productRepository *ProductRepository) GetById(productId int64) (domain.Pro
 	scanErr := queryRow.Scan(&id, &name, &price, &discount, &store)
 
 	if scanErr != nil && scanErr.Error() == common.NOT_FOUND {
-		return domain.Product{}, errors.New(fmt.Sprintf("Product not found with id %d", productId))
+		return domain.Product{}, fmt.Errorf("product not found with id %d", productId)
 	}
 	if scanErr != nil {
-		return domain.Product{}, errors.New(fmt.Sprintf("Error while getting product with id %d", productId))
+		return domain.Product{}, fmt.Errorf("error while getting product with id %d", productId)
 	}
 
 	return domain.Product{
@@ -126,14 +126,14 @@ func (productRepository *ProductRepository) DeleteById(productId int64) error {
 	_, getErr := productRepository.GetById(productId)
 
 	if getErr != nil {
-		return errors.New("Product not found")
+		return errors.New("product not found")
 	}
 
 	deleteSql := `Delete from products where id = $1`
 
 	_, err := productRepository.dbPool.Exec(ctx, deleteSql, productId)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error while deleting product with id %d", productId))
+		return fmt.Errorf("error while deleting product with id %d", productId)
 	}
 	log.Info("Product deleted")
 	return nil
@@ -147,8 +147,8 @@ func (productRepository *ProductRepository) UpdatePrice(productId int64, newPric
 	_, err := productRepository.dbPool.Exec(ctx, updateSql, newPrice, productId)
 
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error while updating product with id : %d", productId))
+		return fmt.Errorf("error while updating product with id : %d", productId)
 	}
-	log.Info("Product %d price updated with new price %v", productId, newPrice)
+	log.Info(fmt.Sprintf("Product %d price updated with new price %v", productId, newPrice))
 	return nil
 }
