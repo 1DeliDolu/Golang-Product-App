@@ -43,10 +43,16 @@ product_repository.go
 
 1. GetAllProducts()
 
-## Infrastructure
+## Test
+
+### Infrastructure
 
 product_repository_test.go 
 
 m *testing.M for test function
 
-m.Run("TestAdd",func(t *testing.T)
+m.Run("TestAdd",func(t *testing.M) for Main Func 
+
+```
+go test -v
+```
